@@ -162,3 +162,28 @@ irq-controller-verif/
 - GTKWave or simulator-native waveform viewer for debug
 
 
+## Verification Approach
+
+- **Testplan-driven**: every feature in `docs/verification_plan.md` maps
+  to a covergroup/bin in `docs/testplan_to_coverage_map.md` — closure is
+  tracked against the plan, not just "coverage went up."
+- **Reference model**: an independent transaction-level model tracks
+  pending/enabled state per source and predicts claim order; the
+  scoreboard compares this against RTL-observed claim/complete
+  transactions cycle-by-cycle.
+- **Stimulus mix**: constrained-random interrupt bursts across sources
+  and targets for breadth, plus directed virtual sequences for known
+  hard corners — simultaneous equal-priority assertion, threshold
+  masking edge values, claim/complete racing with a new higher-priority
+  interrupt arriving mid-service.
+- **Functional coverage**: priority collision matrix, per-target
+  threshold boundary values, multi-source simultaneous assertion counts,
+  claim-to-complete latency buckets, nested preemption depth.
+- **Assertions (SVA)**: structural protocol invariants that hold
+  regardless of stimulus — no claim of a non-pending/non-enabled
+  source, no interrupt ID claimed twice without an intervening
+  complete, arbitration always honors the documented priority order.
+- **Regression discipline**: every test runs with multiple random seeds
+  in CI; coverage is merged across the full regression and reported
+  against the testplan on every run.
+
