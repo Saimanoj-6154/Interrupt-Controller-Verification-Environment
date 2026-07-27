@@ -28,3 +28,45 @@ methodology on a small but genuinely tricky-to-verify piece of hardware.
   priority ordering never violated at arbitration
 - **Regression**: scripted regression list with coverage merge and
   HTML report generation
+## Verification Environment Architecture
+
+```
+                        ┌──────────────────────┐
+                        │   Test (uvm_test)     │  selects sequence(s),
+                        │                        │  configures env
+                        └───────────┬───────────┘
+                                    ▼
+                        ┌──────────────────────┐
+                        │  Virtual Sequencer    │
+                        └───────────┬───────────┘
+                                    ▼
+                        ┌──────────────────────┐
+                        │        Env             │
+                        │  ┌─────────────────┐  │
+                        │  │  intr_src_agent  │  │  drives/monitors N
+                        │  │  (driver/mon/seqr)│ │  interrupt source lines
+                        │  └────────┬────────┘  │
+                        │  ┌────────▼────────┐  │
+                        │  │  reg_agent (APB/ │  │  claim/complete,
+                        │  │  AHB-lite driver) │  │  enable/threshold regs
+                        │  └────────┬────────┘  │
+                        │  ┌────────▼────────┐  │
+                        │  │ target_intr_mon  │  │  monitors interrupt-out
+                        │  │  (per target)    │  │  signals to each target
+                        │  └────────┬────────┘  │
+                        │           ▼            │
+                        │  ┌──────────────────┐  │
+                        │  │  Reference Model  │  │  predicts claim order,
+                        │  │                    │ │  pending/enable state
+                        │  └────────┬──────────┘  │
+                        │           ▼              │
+                        │  ┌──────────────────┐   │
+                        │  │   Scoreboard      │   │  compares RTL vs. model
+                        │  └──────────────────┘   │
+                        │  ┌──────────────────┐   │
+                        │  │ Coverage Collector │  │  functional coverage
+                        │  └──────────────────┘   │
+                        └──────────────────────┘
+```
+
+---
