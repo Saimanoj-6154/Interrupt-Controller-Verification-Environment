@@ -1,0 +1,4 @@
+smoke_test
+priority_stress_test
+threshold_masking_test
+claim_complete_race_test
